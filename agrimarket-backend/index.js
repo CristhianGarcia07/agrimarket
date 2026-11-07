@@ -188,6 +188,27 @@ app.post('/api/requests', async (req, res) => {
     }
 });
 
+// Consultar Solicitudes por ID de Productor
+app.get('/api/requests/productor/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query(`
+            SELECT s.id, s.cantidad, s.observaciones,
+                   p.nombre AS producto, p.precio, 
+                   u.nombre AS cliente, u.telefono AS telefono_cliente, u.correo
+            FROM solicitudes s
+            JOIN productos p ON s.producto_id = p.id
+            JOIN usuarios u ON s.consumidor_id = u.id
+            WHERE p.productor_id = $1
+            ORDER BY s.id DESC
+        `, [id]);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error al consultar solicitudes:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
 // Ruta base de prueba
 app.get('/', (req, res) => {
     res.send('API de AgriMarket funcionando');
