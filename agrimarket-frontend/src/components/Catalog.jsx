@@ -75,9 +75,14 @@ export default function Catalog() {
         <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow border-b-4 border-green-500">
           <h2 className="text-2xl font-bold text-green-700">Catálogo AgriMarket</h2>
           <div className="space-x-4">
-            {usuarioRol === 'productor' && (
+            {/* Si es productor, botón a su panel. Si es cliente, botón a su historial */}
+            {usuarioRol === 'productor' ? (
               <button onClick={() => navigate('/producer')} className="text-blue-600 font-bold hover:underline">
                 Volver a mi Panel
+              </button>
+            ) : (
+              <button onClick={() => navigate('/consumer')} className="text-blue-600 font-bold hover:underline">
+                Ver mis pedidos
               </button>
             )}
             <button onClick={() => { localStorage.removeItem('usuario'); navigate('/'); }} className="text-red-500 font-bold hover:underline">

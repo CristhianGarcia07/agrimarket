@@ -209,6 +209,27 @@ app.get('/api/requests/productor/:id', async (req, res) => {
     }
 });
 
+// CU-12: Consultar Historial de Compras (Consumidor)
+app.get('/api/requests/consumidor/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query(`
+            SELECT s.id, s.cantidad, s.observaciones,
+                   p.nombre AS producto, p.precio, p.unidad,
+                   u.nombre AS productor, u.telefono AS telefono_productor
+            FROM solicitudes s
+            JOIN productos p ON s.producto_id = p.id
+            JOIN usuarios u ON p.productor_id = u.id
+            WHERE s.consumidor_id = $1
+            ORDER BY s.id DESC
+        `, [id]);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error al consultar historial del consumidor:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
 // Ruta base de prueba
 app.get('/', (req, res) => {
     res.send('API de AgriMarket funcionando');

@@ -7,14 +7,10 @@ export default function ProducerDashboard() {
   const [productorId, setProductorId] = useState(null);
   const [productorNombre, setProductorNombre] = useState('');
   
-  // Estados de datos
   const [productos, setProductos] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
   
-  // Control de vistas principales: 'inventario' o 'pedidos'
   const [tabActiva, setTabActiva] = useState('inventario');
-  
-  // Control de subvistas del inventario: 'lista' o 'formulario'
   const [vista, setVista] = useState('lista'); 
   const [modoEdicion, setModoEdicion] = useState(false);
   const [productoEditandoId, setProductoEditandoId] = useState(null);
@@ -102,6 +98,37 @@ export default function ProducerDashboard() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         
+       {/* ================= ENCABEZADO DEL PRODUCTOR (ESTILO PREMIUM) ================= */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-lg border-l-8 border-green-600">
+          <div className="flex items-center space-x-4 mb-4 md:mb-0">
+            <div className="bg-green-100 p-4 rounded-full shadow-inner">
+              <span className="text-3xl" title="Productor">👨‍🌾</span>
+            </div>
+            <div>
+              <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">Panel de Control</h2>
+              <div className="mt-2 flex items-center">
+                <span className="text-gray-500 mr-2">Productor:</span>
+                <span className="bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm border border-green-200 shadow-sm">
+                  {productorNombre}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex space-x-3">
+            <button 
+              onClick={() => navigate('/catalog')} 
+              className="flex items-center px-5 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-200 hover:bg-blue-100 hover:shadow transition">
+              👁️ Ver Catálogo
+            </button>
+            <button 
+              onClick={() => { localStorage.removeItem('usuario'); navigate('/'); }} 
+              className="flex items-center px-5 py-2.5 bg-red-50 text-red-700 font-bold rounded-lg border border-red-200 hover:bg-red-100 hover:shadow transition">
+              🚪 Cerrar Sesión
+            </button>
+          </div>
+        </div>
+
         {/* MENÚ DE NAVEGACIÓN (TABS) */}
         <div className="flex space-x-4 mb-8 bg-white p-4 rounded-lg shadow">
           <button 

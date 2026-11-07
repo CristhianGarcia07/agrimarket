@@ -14,14 +14,22 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Consumimos tu endpoint CU-02
       const res = await axios.post('http://localhost:3000/api/auth/login', credenciales);
+      const usuarioLogueado = res.data.usuario;
       
-      // Guardamos el usuario (con su ID) en el almacenamiento del navegador
-      localStorage.setItem('usuario', JSON.stringify(res.data.usuario));
+      // Guardamos el usuario en el almacenamiento del navegador
+      localStorage.setItem('usuario', JSON.stringify(usuarioLogueado));
       
-      // Redirigimos al panel del productor
-      navigate('/producer');
+      // Redirigimos dependiendo del rol
+      if (usuarioLogueado.rol === 'productor') {
+        navigate('/producer');
+      } else if (usuarioLogueado.rol === 'consumidor') {
+        navigate('/catalog');
+      } else {
+        // Por si acaso hay algún rol no definido
+        navigate('/'); 
+      }
+      
     } catch (err) {
       setError('Credenciales inválidas');
     }
