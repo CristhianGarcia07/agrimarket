@@ -1,17 +1,19 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Register from './components/Register';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
+import Register from './components/Register';
 import Catalog from './components/Catalog';
+import ProducerDashboard from './components/ProducerDashboard';
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/catalog" element={<Catalog />} />
+        <Route path="/producer" element={<ProducerDashboard />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 

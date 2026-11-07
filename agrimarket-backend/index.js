@@ -125,6 +125,33 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
+// CU-05: Actualizar Producto
+app.put('/api/products/:id', async (req, res) => {
+    const { id } = req.params;
+    const { nombre, descripcion, precio, unidad, disponibilidad, imagen } = req.body;
+
+    try {
+        const updateProduct = await pool.query(
+            `UPDATE productos 
+             SET nombre = $1, descripcion = $2, precio = $3, unidad = $4, disponibilidad = $5, imagen = $6 
+             WHERE id = $7 RETURNING *`,
+            [nombre, descripcion, precio, unidad, disponibilidad, imagen, id]
+        );
+
+        if (updateProduct.rows.length === 0) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
+        res.status(200).json({
+            mensaje: 'Producto actualizado exitosamente',
+            producto: updateProduct.rows[0]
+        });
+    } catch (error) {
+        console.error('Error al actualizar producto:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 // CU-07: Consultar Catálogo de Productos
 app.get('/api/products', async (req, res) => {
     try {

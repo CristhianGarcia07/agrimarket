@@ -1,51 +1,71 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Register() {
-  // Estado para guardar los datos del formulario
   const [formData, setFormData] = useState({
-    nombre: '', correo: '', password: '', telefono: '', rol: 'consumidor'
+    nombre: '',
+    correo: '',
+    password: '',
+    telefono: '',
+    rol: 'productor' // Lo dejamos por defecto en productor para tu prueba
   });
   const [mensaje, setMensaje] = useState('');
+  const navigate = useNavigate();
 
-  // Función para actualizar el estado cuando el usuario escribe
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Función que se ejecuta al enviar el formulario
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Evita que la página se recargue
+    e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/register', formData);
-      setMensaje('¡Registro exitoso! Ya puedes iniciar sesión.');
+      await axios.post('http://localhost:3000/api/auth/register', formData);
+      setMensaje('¡Registro exitoso! Redirigiendo al login...');
+      setTimeout(() => navigate('/'), 2000); // Lo manda al login después de 2 segundos
     } catch (error) {
-      setMensaje(error.response?.data?.error || 'Error al registrar');
+      setMensaje(error.response?.data?.error || 'Hubo un error al registrar');
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center text-green-600">Registro AgriMarket</h2>
+      <div className="bg-white p-8 rounded shadow-md w-96 border-t-4 border-green-500">
+        <h2 className="text-2xl font-bold mb-4 text-center text-green-700">Nuevo Usuario</h2>
         
-        <input type="text" name="nombre" placeholder="Nombre completo" onChange={handleChange} className="w-full mb-4 p-2 border rounded" required />
-        <input type="email" name="correo" placeholder="Correo electrónico" onChange={handleChange} className="w-full mb-4 p-2 border rounded" required />
-        <input type="password" name="password" placeholder="Contraseña" onChange={handleChange} className="w-full mb-4 p-2 border rounded" required />
-        <input type="text" name="telefono" placeholder="Teléfono" onChange={handleChange} className="w-full mb-4 p-2 border rounded" />
-        
-        <select name="rol" onChange={handleChange} className="w-full mb-6 p-2 border rounded">
-          <option value="consumidor">Consumidor</option>
-          <option value="productor">Productor</option>
-        </select>
+        {mensaje && <p className="mb-4 text-center font-semibold text-green-600">{mensaje}</p>}
 
-        <button type="submit" className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Registrarse</button>
-        {mensaje && <p className="mt-4 text-center text-sm font-semibold text-gray-700">{mensaje}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700">Nombre completo</label>
+            <input type="text" name="nombre" onChange={handleChange} required className="w-full border p-2 rounded" />
+          </div>
+          <div>
+            <label className="block text-gray-700">Correo</label>
+            <input type="email" name="correo" onChange={handleChange} required className="w-full border p-2 rounded" />
+          </div>
+          <div>
+            <label className="block text-gray-700">Contraseña</label>
+            <input type="password" name="password" onChange={handleChange} required className="w-full border p-2 rounded" />
+          </div>
+          <div>
+            <label className="block text-gray-700">Teléfono</label>
+            <input type="text" name="telefono" onChange={handleChange} required className="w-full border p-2 rounded" />
+          </div>
+          <div>
+            <label className="block text-gray-700">Rol</label>
+            <select name="rol" onChange={handleChange} className="w-full border p-2 rounded">
+              <option value="productor">Productor</option>
+              <option value="consumidor">Consumidor</option>
+            </select>
+          </div>
+          <button type="submit" className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 font-bold">Registrarse</button>
+        </form>
+        
         <p className="mt-4 text-center text-sm">
-            ¿Ya tienes cuenta? <Link to="/" className="text-green-600 hover:underline">Inicia sesión aquí</Link>
+          ¿Ya tienes cuenta? <Link to="/" className="text-green-600 font-bold hover:underline">Inicia sesión</Link>
         </p>
-      </form>
+      </div>
     </div>
   );
 }

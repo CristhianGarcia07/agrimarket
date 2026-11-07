@@ -1,48 +1,49 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const [formData, setFormData] = useState({ correo: '', password: '' });
-  const [mensaje, setMensaje] = useState('');
+  const [credenciales, setCredenciales] = useState({ correo: '', password: '' });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setCredenciales({ ...credenciales, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', formData);
-      setMensaje(`¡Bienvenido, ${response.data.usuario.nombre}!`);
+      // Consumimos tu endpoint CU-02
+      const res = await axios.post('http://localhost:3000/api/auth/login', credenciales);
       
-      // Guardamos los datos del usuario en la memoria del navegador
-      localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
+      // Guardamos el usuario (con su ID) en el almacenamiento del navegador
+      localStorage.setItem('usuario', JSON.stringify(res.data.usuario));
       
-      // Aquí va la redirección, justo después de saber que el login fue exitoso
-      navigate('/catalog'); 
-      
-    } catch (error) {
-      setMensaje(error.response?.data?.error || 'Error al iniciar sesión');
+      // Redirigimos al panel del productor
+      navigate('/producer');
+    } catch (err) {
+      setError('Credenciales inválidas');
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center text-green-600">Iniciar Sesión</h2>
-        
-        <input type="email" name="correo" placeholder="Correo electrónico" onChange={handleChange} className="w-full mb-4 p-2 border rounded" required />
-        <input type="password" name="password" placeholder="Contraseña" onChange={handleChange} className="w-full mb-4 p-2 border rounded" required />
-
-        <button type="submit" className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Entrar</button>
-        {mensaje && <p className="mt-4 text-center text-sm font-semibold text-gray-700">{mensaje}</p>}
-        
-        <p className="mt-4 text-center text-sm">
-          ¿No tienes cuenta? <Link to="/register" className="text-green-600 hover:underline">Regístrate aquí</Link>
-        </p>
-      </form>
+      <div className="bg-white p-8 rounded shadow-md w-96">
+        <h2 className="text-2xl font-bold mb-4 text-center text-green-700">AgriMarket - Ingreso</h2>
+        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700">Correo</label>
+            <input type="email" name="correo" onChange={handleChange} required className="w-full border p-2 rounded" />
+          </div>
+          <div>
+            <label className="block text-gray-700">Contraseña</label>
+            <input type="password" name="password" onChange={handleChange} required className="w-full border p-2 rounded" />
+          </div>
+          <button type="submit" className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Entrar</button>
+        </form>
+      </div>
     </div>
   );
 }
