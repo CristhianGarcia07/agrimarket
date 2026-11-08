@@ -94,11 +94,33 @@ export default function ProducerDashboard() {
     }
   };
 
+  const eliminarProducto = async (id, nombre) => {
+    if (window.confirm(`¿Estás seguro de eliminar "${nombre}"?`)) {
+      try {
+        await axios.delete(`http://localhost:3000/api/products/${id}`);
+        cargarMisProductos(productorNombre);
+      } catch (error) {
+        console.error('Error al eliminar:', error);
+        alert('No se pudo eliminar el producto. Es posible que tenga pedidos asociados.');
+      }
+    }
+  };
+
+  const cambiarEstadoSolicitud = async (id, nuevoEstado) => {
+    try {
+      await axios.patch(`http://localhost:3000/api/requests/${id}/status`, { estado: nuevoEstado });
+      cargarMisSolicitudes(productorId);
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+      alert('No se pudo actualizar el estado de la solicitud.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         
-       {/* ================= ENCABEZADO DEL PRODUCTOR (ESTILO PREMIUM) ================= */}
+        {/* ================= ENCABEZADO DEL PRODUCTOR (ESTILO PREMIUM) ================= */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-lg border-l-8 border-green-600">
           <div className="flex items-center space-x-4 mb-4 md:mb-0">
             <div className="bg-green-100 p-4 rounded-full shadow-inner">
@@ -164,8 +186,17 @@ export default function ProducerDashboard() {
                       <p className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">{p.disponibilidad} Kilos Disp.</p>
                     </div>
                   </div>
-                  <div className="p-4 bg-gray-50 border-t">
-                    <button onClick={() => abrirFormularioEdicion(p)} className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700">Editar Información</button>
+                  <div className="p-4 bg-gray-50 border-t flex gap-2">
+                    <button 
+                      onClick={() => abrirFormularioEdicion(p)} 
+                      className="w-1/2 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">
+                      Editar
+                    </button>
+                    <button 
+                      onClick={() => eliminarProducto(p.id, p.nombre)} 
+                      className="w-1/2 bg-red-600 text-white py-2 rounded font-semibold hover:bg-red-700 transition">
+                      Eliminar
+                    </button>
                   </div>
                 </div>
               ))}
@@ -211,9 +242,11 @@ export default function ProducerDashboard() {
                       <th className="p-3 border-b">ID</th>
                       <th className="p-3 border-b">Producto</th>
                       <th className="p-3 border-b">Cantidad</th>
+                      <th className="p-3 border-b">Total Venta</th>
                       <th className="p-3 border-b">Cliente</th>
                       <th className="p-3 border-b">Contacto</th>
-                      <th className="p-3 border-b">Observaciones</th>
+                      <th className="p-3 border-b">Estado</th>
+                      <th className="p-3 border-b">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -222,12 +255,33 @@ export default function ProducerDashboard() {
                         <td className="p-3 text-gray-500">#{s.id}</td>
                         <td className="p-3 font-bold text-gray-800">{s.producto}</td>
                         <td className="p-3 text-green-700 font-bold">{s.cantidad} Libras</td>
+                        <td className="p-3 text-green-700 font-black">${s.cantidad * s.precio}</td>
                         <td className="p-3">{s.cliente}</td>
                         <td className="p-3 text-sm">
                           <p>📞 {s.telefono_cliente}</p>
                           <p className="text-gray-500">{s.correo}</p>
                         </td>
-                        <td className="p-3 text-gray-600 italic">{s.observaciones || 'N/A'}</td>
+                        <td className="p-3">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            s.estado === 'Aceptado' ? 'bg-green-100 text-green-800' :
+                            s.estado === 'Rechazado' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {s.estado || 'Pendiente'}
+                          </span>
+                        </td>
+                        <td className="p-3 space-x-2 whitespace-nowrap">
+                          <button 
+                            onClick={() => cambiarEstadoSolicitud(s.id, 'Aceptado')} 
+                            className="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-700 transition">
+                            Aceptar
+                          </button>
+                          <button 
+                            onClick={() => cambiarEstadoSolicitud(s.id, 'Rechazado')} 
+                            className="bg-red-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-red-700 transition">
+                            Rechazar
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

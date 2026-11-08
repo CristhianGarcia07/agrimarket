@@ -50,6 +50,10 @@ export default function Login() {
             <input type="password" name="password" onChange={handleChange} required className="w-full border p-2 rounded" />
           </div>
           <button type="submit" className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Entrar</button>
+
+          <div className="mt-4 text-center text-sm">
+            ¿No tienes cuenta? <a href="/register" className="text-green-600 hover:underline font-bold">Regístrate aquí</a>
+          </div>
         </form>
       </div>
     </div>

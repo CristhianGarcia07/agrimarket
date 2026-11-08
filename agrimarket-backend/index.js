@@ -152,6 +152,26 @@ app.put('/api/products/:id', async (req, res) => {
     }
 });
 
+// CU-06: Eliminar Producto
+app.delete('/api/products/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deleteProduct = await pool.query(
+            'DELETE FROM productos WHERE id = $1 RETURNING *',
+            [id]
+        );
+
+        if (deleteProduct.rows.length === 0) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
+        res.status(200).json({ mensaje: 'Producto eliminado exitosamente' });
+    } catch (error) {
+        console.error('Error al eliminar producto:', error);
+        res.status(500).json({ error: 'Error del servidor (es posible que este producto tenga pedidos asociados)' });
+    }
+});
+
 // CU-07: Consultar Catálogo de Productos
 app.get('/api/products', async (req, res) => {
     try {
@@ -193,7 +213,7 @@ app.get('/api/requests/productor/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query(`
-            SELECT s.id, s.cantidad, s.observaciones,
+            SELECT s.id, s.cantidad, s.observaciones, s.estado,
                    p.nombre AS producto, p.precio, 
                    u.nombre AS cliente, u.telefono AS telefono_cliente, u.correo
             FROM solicitudes s
@@ -214,7 +234,7 @@ app.get('/api/requests/consumidor/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query(`
-            SELECT s.id, s.cantidad, s.observaciones,
+            SELECT s.id, s.cantidad, s.observaciones, s.estado,
                    p.nombre AS producto, p.precio, p.unidad,
                    u.nombre AS productor, u.telefono AS telefono_productor
             FROM solicitudes s
@@ -227,6 +247,56 @@ app.get('/api/requests/consumidor/:id', async (req, res) => {
     } catch (error) {
         console.error('Error al consultar historial del consumidor:', error);
         res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+// CU-13: Actualizar Estado de Solicitud (Aceptar/Rechazar)
+app.patch('/api/requests/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { estado } = req.body;
+    
+    try {
+        const result = await pool.query(
+            'UPDATE solicitudes SET estado = $1 WHERE id = $2 RETURNING *',
+            [estado, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+
+        res.status(200).json({ 
+            mensaje: 'Estado actualizado exitosamente', 
+            solicitud: result.rows[0] 
+        });
+    } catch (error) {
+        console.error('Error al actualizar el estado:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// CU-13: Actualizar Estado de Solicitud (Aceptar/Rechazar)
+app.patch('/api/requests/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { estado } = req.body;
+    
+    try {
+        const result = await pool.query(
+            'UPDATE solicitudes SET estado = $1 WHERE id = $2 RETURNING *',
+            [estado, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+
+        res.status(200).json({ 
+            mensaje: 'Estado actualizado exitosamente', 
+            solicitud: result.rows[0] 
+        });
+    } catch (error) {
+        console.error('Error al actualizar el estado:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 
