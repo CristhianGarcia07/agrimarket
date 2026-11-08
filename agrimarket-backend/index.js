@@ -12,36 +12,37 @@ app.use(express.json());
 
 // CU-01: Endpoint de Registro de Usuario
 app.post('/api/auth/register', async (req, res) => {
-    const { nombre, correo, password, telefono, rol } = req.body;
+    // 1. Agregamos 'direccion' aquí
+    const { nombre, correo, password, telefono, rol, direccion } = req.body;
 
     try {
-        // 1. Validar que los campos obligatorios existan
-        if (!nombre || !correo || !password || !rol) {
+        // 2. Exigimos que la dirección no venga vacía
+        if (!nombre || !correo || !password || !rol || !direccion) {
             return res.status(400).json({ error: 'Faltan campos obligatorios' });
         }
 
-        // 2. Validar que el rol sea correcto según las reglas de negocio
+        // Validar que el rol sea correcto según las reglas de negocio
         if (rol !== 'productor' && rol !== 'consumidor') {
             return res.status(400).json({ error: 'Rol inválido' });
         }
 
-        // 3. Verificar si el correo ya existe en la base de datos
+        // Verificar si el correo ya existe en la base de datos
         const userExists = await pool.query('SELECT * FROM usuarios WHERE correo = $1', [correo]);
         if (userExists.rows.length > 0) {
             return res.status(400).json({ error: 'El correo ya está registrado' });
         }
 
-        // 4. Encriptar la contraseña
+        // Encriptar la contraseña
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        // 5. Insertar el nuevo usuario en PostgreSQL
+        // 3. Insertar el nuevo usuario en PostgreSQL incluyendo el campo direccion
         const newUser = await pool.query(
-            'INSERT INTO usuarios (nombre, correo, password_hash, telefono, rol) VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre, correo, rol',
-            [nombre, correo, passwordHash, telefono, rol]
+            'INSERT INTO usuarios (nombre, correo, password_hash, telefono, rol, direccion) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, nombre, correo, rol, direccion',
+            [nombre, correo, passwordHash, telefono, rol, direccion]
         );
 
-        // 6. Retornar éxito sin exponer la contraseña
+        // Retornar éxito sin exponer la contraseña
         res.status(201).json({
             mensaje: 'Usuario registrado exitosamente',
             usuario: newUser.rows[0]
@@ -52,7 +53,6 @@ app.post('/api/auth/register', async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
-
 
 // CU-02: Endpoint de Inicio de Sesión
 app.post('/api/auth/login', async (req, res) => {
@@ -215,7 +215,7 @@ app.get('/api/requests/productor/:id', async (req, res) => {
         const result = await pool.query(`
             SELECT s.id, s.cantidad, s.observaciones, s.estado,
                    p.nombre AS producto, p.precio, 
-                   u.nombre AS cliente, u.telefono AS telefono_cliente, u.correo
+                   u.nombre AS cliente, u.telefono AS telefono_cliente, u.correo, u.direccion AS direccion_cliente
             FROM solicitudes s
             JOIN productos p ON s.producto_id = p.id
             JOIN usuarios u ON s.consumidor_id = u.id
@@ -227,7 +227,7 @@ app.get('/api/requests/productor/:id', async (req, res) => {
         console.error('Error al consultar solicitudes:', error);
         res.status(500).json({ error: 'Error del servidor' });
     }
-});
+})
 
 // CU-12: Consultar Historial de Compras (Consumidor)
 app.get('/api/requests/consumidor/:id', async (req, res) => {
@@ -236,7 +236,7 @@ app.get('/api/requests/consumidor/:id', async (req, res) => {
         const result = await pool.query(`
             SELECT s.id, s.cantidad, s.observaciones, s.estado,
                    p.nombre AS producto, p.precio, p.unidad,
-                   u.nombre AS productor, u.telefono AS telefono_productor
+                   u.nombre AS productor, u.telefono AS telefono_productor, u.direccion AS direccion_productor
             FROM solicitudes s
             JOIN productos p ON s.producto_id = p.id
             JOIN usuarios u ON p.productor_id = u.id
@@ -247,6 +247,31 @@ app.get('/api/requests/consumidor/:id', async (req, res) => {
     } catch (error) {
         console.error('Error al consultar historial del consumidor:', error);
         res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+// CU-13: Actualizar Estado de Solicitud (Aceptar/Rechazar)
+app.patch('/api/requests/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { estado } = req.body;
+    
+    try {
+        const result = await pool.query(
+            'UPDATE solicitudes SET estado = $1 WHERE id = $2 RETURNING *',
+            [estado, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+
+        res.status(200).json({ 
+            mensaje: 'Estado actualizado exitosamente', 
+            solicitud: result.rows[0] 
+        });
+    } catch (error) {
+        console.error('Error al actualizar el estado:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 

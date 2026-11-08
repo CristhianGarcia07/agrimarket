@@ -36,25 +36,55 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-4 text-center text-green-700">AgriMarket - Ingreso</h2>
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700">Correo</label>
-            <input type="email" name="correo" onChange={handleChange} required className="w-full border p-2 rounded" />
-          </div>
-          <div>
-            <label className="block text-gray-700">Contraseña</label>
-            <input type="password" name="password" onChange={handleChange} required className="w-full border p-2 rounded" />
-          </div>
-          <button type="submit" className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Entrar</button>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white p-8 shadow-md rounded-md w-96">
+        <h2 className="text-2xl font-bold text-green-700 text-center mb-6">
+          AgriMarket - Ingreso
+        </h2>
+        
+        {/* Muestra tu variable de error si existe */}
+        {error && (
+          <p className="text-center text-red-500 text-sm mb-4">{error}</p>
+        )}
 
-          <div className="mt-4 text-center text-sm">
-            ¿No tienes cuenta? <a href="/register" className="text-green-600 hover:underline font-bold">Regístrate aquí</a>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-1 text-sm">Correo</label>
+            <input
+              type="email"
+              name="correo"
+              onChange={handleChange} // O tu función de estado correspondiente
+              className="w-full bg-blue-50 border border-gray-200 rounded p-2 focus:outline-none focus:border-green-600"
+              required
+            />
           </div>
+          
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-1 text-sm">Contraseña</label>
+            <input
+              type="password"
+              name="password"
+              onChange={handleChange} // O tu función de estado correspondiente
+              className="w-full bg-blue-50 border border-gray-200 rounded p-2 focus:outline-none focus:border-green-600"
+              required
+            />
+          </div>
+          
+          <button
+            type="submit"
+            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 font-semibold transition-colors"
+          >
+            Entrar
+          </button>
         </form>
+
+        {/* ENLACE COMPLETO AL REGISTRO */}
+        <div className="mt-6 text-center text-sm">
+          ¿No tienes cuenta?{' '}
+          <a href="/register" className="text-green-600 hover:underline font-bold">
+            Regístrate aquí
+          </a>
+        </div>
       </div>
     </div>
   );
