@@ -275,31 +275,6 @@ app.patch('/api/requests/:id/status', async (req, res) => {
     }
 });
 
-// CU-13: Actualizar Estado de Solicitud (Aceptar/Rechazar)
-app.patch('/api/requests/:id/status', async (req, res) => {
-    const { id } = req.params;
-    const { estado } = req.body;
-    
-    try {
-        const result = await pool.query(
-            'UPDATE solicitudes SET estado = $1 WHERE id = $2 RETURNING *',
-            [estado, id]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Solicitud no encontrada' });
-        }
-
-        res.status(200).json({ 
-            mensaje: 'Estado actualizado exitosamente', 
-            solicitud: result.rows[0] 
-        });
-    } catch (error) {
-        console.error('Error al actualizar el estado:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-});
-
 // Ruta base de prueba
 app.get('/', (req, res) => {
     res.send('API de AgriMarket funcionando');
